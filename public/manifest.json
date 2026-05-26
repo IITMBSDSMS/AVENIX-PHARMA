@@ -1,0 +1,43 @@
+{
+  "name": "Avenix Pharmaceuticals",
+  "short_name": "Avenix",
+  "description": "India's Intelligent Online Pharmacy — AI-powered medicine delivery, lab tests & emergency dispatch.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070A13",
+  "theme_color": "#FF6B00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "192x192",
+      "type": "image/x-icon",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["health", "medical", "shopping"],
+  "lang": "en-IN",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Order Medicines",
+      "url": "/delivery",
+      "description": "Browse and order medicines"
+    },
+    {
+      "name": "SOS Emergency",
+      "url": "/emergency",
+      "description": "Emergency medicine dispatch"
+    },
+    {
+      "name": "Book Lab Test",
+      "url": "/diagnostics",
+      "description": "Book diagnostic tests"
+    }
+  ]
+}

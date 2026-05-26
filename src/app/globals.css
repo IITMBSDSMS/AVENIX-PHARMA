@@ -1,26 +1,373 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand-orange: #FF6B00;
+  --color-brand-orange-light: #FF8533;
+  --color-brand-orange-dark: #CC5500;
+  --color-brand-dark: #121212;
+  --color-brand-gray: #FAFAFA;
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-scan: scan 3s linear infinite;
+  --animate-float-slow: float-slow 8s ease-in-out infinite;
+  --animate-float-medium: float-medium 6s ease-in-out infinite;
+  --animate-float-fast: float-fast 4s ease-in-out infinite;
+  --animate-glow: glow 2s ease-in-out infinite;
+  --animate-beam: beam 2.5s ease-in-out infinite;
+  --animate-marquee: marquee 25s linear infinite;
+  --animate-marquee-slow: marquee 40s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 40s linear infinite;
+  --animate-heartbeat-glow: heartbeat-glow 1.5s ease-in-out infinite;
+  --animate-biometric-ripple: biometric-ripple 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  --animate-neural-pulse: neural-pulse 2s ease-in-out infinite;
+  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ──────────────────────────────────────
+   Keyframes
+────────────────────────────────────── */
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes marquee-reverse {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.15; transform: scale(0.97); }
+  50%       { opacity: 0.45; transform: scale(1.03); }
+}
+@keyframes scan {
+  0%   { top: 0%; }
+  50%  { top: 100%; }
+  100% { top: 0%; }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.2; }
+  50%       { transform: translateY(-25px) scale(1.1); opacity: 0.5; }
+}
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+  50%       { transform: translateY(-18px) rotate(90deg); opacity: 0.6; }
+}
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.4; }
+  50%       { transform: translateY(-12px) scale(1.05); opacity: 0.7; }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,107,0,0.15), 0 0 20px rgba(255,107,0,0.05); }
+  50%       { box-shadow: 0 0 28px rgba(255,107,0,0.55), 0 0 45px rgba(255,107,0,0.25); }
+}
+@keyframes beam {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.9); }
+  50%       { opacity: 0.95; transform: scaleX(1.05); }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ──────────────────────────────────────
+   Respect reduced-motion preferences
+────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
+}
+
+/* ──────────────────────────────────────
+   Base
+────────────────────────────────────── */
+:root {
+  --background: #FFFFFF;
+  --foreground: #121212;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ──────────────────────────────────────
+   Touch-friendly tap targets (mobile)
+────────────────────────────────────── */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+  /* Prevent double-tap zoom on buttons */
+  button, a {
+    touch-action: manipulation;
+  }
+}
+
+/* ──────────────────────────────────────
+   Image performance
+────────────────────────────────────── */
+img {
+  content-visibility: auto;
+}
+
+/* ──────────────────────────────────────
+   Glassmorphism helpers
+────────────────────────────────────── */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Disable expensive blur on low-end mobile */
+@media (max-width: 640px) {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.glass-panel-dark {
+  background: rgba(18, 18, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 640px) {
+  .glass-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.glass-card:hover {
+  box-shadow: 0 8px 32px rgba(255,107,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* ──────────────────────────────────────
+   Utility classes
+────────────────────────────────────── */
+.glow-orange {
+  filter: drop-shadow(0 0 15px rgba(255, 107, 0, 0.25));
+}
+.glow-orange-lg {
+  filter: drop-shadow(0 0 35px rgba(255, 107, 0, 0.5));
+}
+.text-gradient-orange {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8F3d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.bg-orange-gradient {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8533 100%);
+}
+.bg-glow-gradient {
+  background: radial-gradient(circle at 50% 50%, rgba(255,107,0,0.08) 0%, rgba(255,255,255,0) 70%);
+}
+
+/* Subtle grid texture */
+.medical-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255,107,0,0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,107,0,0.02) 1px, transparent 1px);
+}
+@media (max-width: 640px) {
+  /* Disable grid texture on mobile for perf */
+  .medical-grid {
+    background-image: none;
+  }
+}
+
+/* Mobile drawer animation */
+.mobile-drawer {
+  animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* ──────────────────────────────────────
+   Custom scrollbar (desktop only)
+────────────────────────────────────── */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar        { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { background: #f5f5f5; }
+  ::-webkit-scrollbar-thumb  { background: #d4d4d4; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+}
+
+/* ──────────────────────────────────────
+   Focus ring — keyboard accessibility
+────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #FF6B00;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ──────────────────────────────────────
+   Reel Card Custom Animations
+   ────────────────────────────────────── */
+@keyframes play-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6), 0 0 0 8px rgba(220, 38, 38, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(220, 38, 38, 0), 0 0 0 24px rgba(220, 38, 38, 0);
+  }
+}
+.animate-play-pulse {
+  animation: play-pulse 2s infinite;
+}
+
+.shine-sweep {
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: left 0.75s ease;
+  z-index: 5;
+  pointer-events: none;
+}
+.group:hover .shine-sweep {
+  left: 150%;
+}
+
+/* Laser scanning line animation for prescription scanner */
+@keyframes laser-scan {
+  0% { top: 0%; opacity: 0.8; }
+  50% { top: 100%; opacity: 0.8; }
+  100% { top: 0%; opacity: 0.8; }
+}
+.animate-laser-scan {
+  animation: laser-scan 2s ease-in-out infinite;
+}
+
+/* ECG pulse drawing animation for telehealth mockup */
+@keyframes draw-pulse {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.animate-draw-pulse {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-pulse 1.8s linear infinite;
+}
+
+/* Healix SOS emergency system animations */
+@keyframes heartbeat-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.4), 0 0 5px rgba(220, 38, 38, 0.2); }
+  50% { box-shadow: 0 0 35px rgba(220, 38, 38, 0.95), 0 0 15px rgba(220, 38, 38, 0.5); }
+}
+
+@keyframes biometric-ripple {
+  0% { transform: scale(0.85); opacity: 0.85; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes neural-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; filter: brightness(1); }
+  50% { transform: scale(1.03); opacity: 1; filter: brightness(1.25); }
+}
+
+@keyframes ecg-line-anim {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+.animate-ecg-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 0;
+  animation: ecg-line-anim 20s linear infinite;
+}
+
+.biometric-ring {
+  position: absolute;
+  inset: -12px;
+  border: 1px solid rgba(220, 38, 38, 0.45);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.glass-morphism-red {
+  background: rgba(220, 38, 38, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+}
+
+/* ──────────────────────────────────────
+   Scrollbar hide utility (used in SOS overlay tabs)
+────────────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ──────────────────────────────────────
+   iOS Safe Area / Notch support
+────────────────────────────────────── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* Fixed bottom elements respect notch */
+  .fixed-bottom-safe {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ──────────────────────────────────────
+   Mobile pill button exception
+   (SOS tabs are intentionally small)
+────────────────────────────────────── */
+@media (max-width: 768px) {
+  .pill-btn-sm {
+    min-height: unset;
+  }
+}
+
+/* ──────────────────────────────────────
+   Animate marquee left-to-right variant
+────────────────────────────────────── */
+@keyframes marquee-l2r {
+  0%   { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }

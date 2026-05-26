@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Healix Live Tracking Grid</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    html, body, #map {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #070A13;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    #offline-fallback {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      background: #070A13;
+      color: #94A3B8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .pulsing-marker {
+      background: #EF4444;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #EF4444;
+    }
+    .pulsing-marker-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.4);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+    .ambulance-marker {
+      background: #FF6B00;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #FF6B00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .hospital-marker {
+      background: #10B981;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #10B981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .leaflet-bar {
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      background: rgba(15, 23, 42, 0.8) !important;
+      backdrop-filter: blur(8px);
+    }
+    .leaflet-bar a {
+      background: transparent !important;
+      color: #E2E8F0 !important;
+      border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .leaflet-bar a:hover {
+      background: rgba(255,255,255,0.1) !important;
+    }
+    .offline-grid-svg {
+      width: 80%;
+      max-width: 320px;
+      height: auto;
+      opacity: 0.25;
+      margin-bottom: 20px;
+      color: #EF4444;
+      animation: neural-pulse 3s infinite ease-in-out;
+    }
+    @keyframes neural-pulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div id="offline-fallback">
+    <svg class="offline-grid-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="0.75" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 10h80v80H10z" stroke-dasharray="2,2"/>
+      <path d="M10 30h80M10 50h80M10 70h80M30 10v80M50 10v80M70 10v80"/>
+      <circle cx="50" cy="50" r="4" fill="currentColor"/>
+      <path d="M 50 50 L 80 20" stroke="currentColor" stroke-dasharray="3,3"/>
+      <circle cx="80" cy="20" r="4" fill="#10B981"/>
+    </svg>
+    <div style="font-size: 13px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #F87171;">
+      [OFFLINE RESCUE MODE ACTIVE]
+    </div>
+    <div style="font-size: 10px; color: #94A3B8; margin-top: 6px; font-family: monospace; line-height: 1.5;">
+      Displaying Cached Delhi-NCR Road Grid & Sensors<br>
+      GPS Relays active: <span id="offline-gps">0.0, 0.0</span>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    let map = null;
+    let patientMarker = null;
+    let ambulanceMarker = null;
+    let hospitalMarker = null;
+    let routeLine = null;
+
+    const cartoDarkUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+    function initMap(lat, lng) {
+      if (map) return;
+      map = L.map('map', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([lat, lng], 13);
+
+      L.tileLayer(cartoDarkUrl, {
+        maxZoom: 19
+      }).addTo(map);
+    }
+
+    function updateMap(data) {
+      const isOffline = data.offline;
+      const patient = data.patient;
+      const ambulance = data.ambulance;
+      const hospital = data.hospital;
+
+      const mapEl = document.getElementById('map');
+      const offlineEl = document.getElementById('offline-fallback');
+
+      if (isOffline) {
+        mapEl.style.display = 'none';
+        offlineEl.style.display = 'flex';
+        document.getElementById('offline-gps').innerText = patient ? `${patient.lat.toFixed(4)} N, ${patient.lng.toFixed(4)} E` : '28.5355, 77.3910';
+        return;
+      }
+
+      mapEl.style.display = 'block';
+      offlineEl.style.display = 'none';
+
+      if (!patient) return;
+      initMap(patient.lat, patient.lng);
+
+      // 1. Patient Marker
+      const patientIcon = L.divIcon({
+        className: 'custom-patient-icon',
+        html: '<div class="pulsing-marker" style="width: 14px; height: 14px;"><div class="pulsing-marker-inner"></div></div>',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+
+      if (patientMarker) {
+        patientMarker.setLatLng([patient.lat, patient.lng]);
+      } else {
+        patientMarker = L.marker([patient.lat, patient.lng], { icon: patientIcon }).addTo(map);
+      }
+
+      // 2. Hospital Marker
+      if (hospital) {
+        const hospitalIcon = L.divIcon({
+          className: 'custom-hosp-icon',
+          html: '<div class="hospital-marker" style="width: 18px; height: 18px; line-height: 14px;">H</div>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9]
+        });
+
+        if (hospitalMarker) {
+          hospitalMarker.setLatLng([hospital.lat, hospital.lng]);
+        } else {
+          hospitalMarker = L.marker([hospital.lat, hospital.lng], { icon: hospitalIcon }).addTo(map);
+        }
+      } else if (hospitalMarker) {
+        map.removeLayer(hospitalMarker);
+        hospitalMarker = null;
+      }
+
+      // 3. Ambulance Marker
+      if (ambulance) {
+        const ambulanceIcon = L.divIcon({
+          className: 'custom-amb-icon',
+          html: '<div class="ambulance-marker" style="width: 18px; height: 18px; line-height: 14px;">A</div>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9]
+        });
+
+        if (ambulanceMarker) {
+          ambulanceMarker.setLatLng([ambulance.lat, ambulance.lng]);
+        } else {
+          ambulanceMarker = L.marker([ambulance.lat, ambulance.lng], { icon: ambulanceIcon }).addTo(map);
+        }
+      } else if (ambulanceMarker) {
+        map.removeLayer(ambulanceMarker);
+        ambulanceMarker = null;
+      }
+
+      // 4. Draw Route Line
+      let routeCoords = [];
+      if (ambulance) {
+        routeCoords.push([ambulance.lat, ambulance.lng]);
+      }
+      routeCoords.push([patient.lat, patient.lng]);
+      if (hospital) {
+        routeCoords.push([hospital.lat, hospital.lng]);
+      }
+
+      if (routeLine) {
+        routeLine.setLatLngs(routeCoords);
+      } else {
+        routeLine = L.polyline(routeCoords, {
+          color: '#FF6B00',
+          weight: 3,
+          opacity: 0.8,
+          dashArray: '5, 8'
+        }).addTo(map);
+      }
+
+      // Fit bounds
+      try {
+        const bounds = L.latLngBounds(routeCoords);
+        map.fitBounds(bounds, { padding: [40, 40] });
+      } catch (e) {}
+    }
+
+    // Handle initial parameter load if postMessage delayed
+    window.addEventListener("load", () => {
+      const params = new URLSearchParams(window.location.search);
+      const lat = parseFloat(params.get("lat") || "28.5355");
+      const lng = parseFloat(params.get("lng") || "77.3910");
+      const hlat = parseFloat(params.get("hlat"));
+      const hlng = parseFloat(params.get("hlng"));
+      const alat = parseFloat(params.get("alat"));
+      const alng = parseFloat(params.get("alng"));
+      const offline = params.get("offline") === "true";
+
+      const data = {
+        offline,
+        patient: { lat, lng },
+        ambulance: (!isNaN(alat) && !isNaN(alng)) ? { lat: alat, lng: alng } : null,
+        hospital: (!isNaN(hlat) && !isNaN(hlng)) ? { lat: hlat, lng: hlng } : null
+      };
+      updateMap(data);
+    });
+
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "UPDATE_COORDINATES") {
+        updateMap(event.data);
+      }
+    });
+  </script>
+</body>
+</html>

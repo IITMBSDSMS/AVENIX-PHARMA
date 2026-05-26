@@ -1,0 +1,215 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Medicine {
+  id                   String  @id @default(uuid())
+  name                 String
+  tagline              String
+  price                Float
+  originalPrice        Float?
+  inStock              Int
+  requiresPrescription Boolean
+  dosage               String
+  category             String // OTC, Prescription, Critical
+  manufacturer         String
+  image                String?
+  scientificName       String?
+  description          String?
+  subCategory          String?
+}
+
+model Order {
+  id                   String  @id
+  itemsJson            String // Stores CartItem[] as a JSON string
+  totalAmount          Float
+  status               String // pending, verified, dispatched, delivered, cancelled
+  date                 String
+  patientName          String
+  prescriptionAttached String?
+  eta                  String
+  trackingStep         Int
+  userEmail            String?
+}
+
+model PrescriptionScan {
+  id               String @id @default(uuid())
+  fileName         String
+  date             String
+  medicinesJson    String // Stores medicines list as JSON string
+  warningsJson     String // Stores warnings string[] as JSON string
+  sideEffectsJson  String // Stores sideEffects string[] as JSON string
+  safetyScore      Int
+  interactions     String
+  userEmail        String?
+}
+
+model Booking {
+  id          String  @id @default(uuid())
+  type        String // doctor, diagnostics
+  targetName  String
+  patientName String
+  date        String
+  timeslot    String
+  status      String // upcoming, completed, cancelled
+  userEmail   String?
+}
+
+model NotificationAlert {
+  id        String  @id @default(uuid())
+  type      String // whatsapp, email, sms
+  recipient String
+  subject   String?
+  message   String
+  timestamp String
+  status    String // sent, delivered
+}
+
+model HomepageContent {
+  key       String @id // "banners", "testimonials", "categories"
+  valueJson String // Stores JSON data array
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      String   // admin, doctor, pharmacist, customer
+  password  String   // stores cryptographically hashed passwords
+  avatar    String?
+  createdAt DateTime @default(now())
+}
+
+model EmergencyEvent {
+  id               String  @id @default(uuid())
+  symptom          String
+  severity         String
+  panicIndex       Float
+  stressLevel      Float
+  breathRate       Float
+  patientGps       String  // "lat,lng"
+  ambulanceGps     String  // "lat,lng"
+  status           String  // "triage", "dispatched", "enroute", "arrived"
+  eta              Int
+  hospitalName     String?
+  userEmail        String?
+  timestamp        String
+  vitalsJson       String? // Heart rate and SpO2 stream logs JSON array
+  replayStepsJson  String? // Chronological replay timeline JSON array
+}
+
+model HospitalNetwork {
+  id           String  @id @default(uuid())
+  name         String
+  distance     String
+  beds         Int
+  strokeUnit   String
+  cathLab      String
+  doctorDuty   String
+  survivalProb Float
+  isBest       Boolean
+}
+
+model ClinicalGuidanceEfficacy {
+  id              String @id @default(uuid())
+  symptom         String
+  instructions    String
+  survivalOutcome Float
+}
+
+model EmergencySession {
+  id               String   @id @default(uuid())
+  eventId          String   @unique
+  userEmail        String?
+  symptom          String
+  severity         String
+  panicIndex       Float
+  stressLevel      Float
+  breathRate       Float
+  speechDelay      Float
+  confusionScore   Float
+  unconsciousness  Boolean  @default(false)
+  urgencyScore     Float    // Urgency confidence score (e.g. 0.92)
+  status           String   // "stable", "urgent", "critical", "immediate_dispatch"
+  patientGps       String
+  timestamp        DateTime @default(now())
+}
+
+model VoiceTranscript {
+  id               String   @id @default(uuid())
+  sessionId        String
+  audioBlobUrl     String?
+  transcriptText   String
+  analyzedEmotion  String?
+  createdAt        DateTime @default(now())
+}
+
+model SeverityScore {
+  id               String   @id @default(uuid())
+  sessionId        String
+  category         String   // "Stable", "Urgent", "Critical", "Immediate Dispatch Required"
+  confidence       Float
+  timestamp        DateTime @default(now())
+}
+
+model AmbulanceRoute {
+  id               String   @id @default(uuid())
+  sessionId        String
+  ambulanceGps     String
+  destinationGps   String
+  trafficFactor    Float
+  estimatedArrival DateTime
+  status           String
+}
+
+model HospitalCapacity {
+  id               String   @id @default(uuid())
+  hospitalName     String   @unique
+  icuAvailable     Int
+  specialtyReady   String   // "Active", "Full", "Offline"
+  cathLabReady     String   // "Ready", "Occupied", "Offline"
+  doctorReady      String
+  emergencyLoad    Int      // current queue load (1-100)
+  staffReady       Int      // staffing ratio (0-100)
+}
+
+model IncidentOutcome {
+  id               String   @id @default(uuid())
+  sessionId        String
+  hospitalSelected String
+  survivalOutcome  Float
+  notes            String?
+  timestamp        DateTime @default(now())
+}
+
+model DispatchLog {
+  id               String   @id @default(uuid())
+  sessionId        String
+  dispatchTime     DateTime @default(now())
+  carrierId        String
+  vehicleType      String
+  status           String
+}
+
+model FamilyNotification {
+  id               String   @id @default(uuid())
+  sessionId        String
+  recipientNumber  String
+  messageSent      String
+  status           String   // "sent", "delivered"
+  timestamp        DateTime @default(now())
+}
+
+model SurvivalAnalytics {
+  id               String   @id @default(uuid())
+  epochTime        DateTime @default(now())
+  trainedCases     Int
+  meanSurvivalRate Float
+  lossValue        Float
+}
+

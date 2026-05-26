@@ -1,0 +1,18 @@
+import { scryptSync, randomBytes } from "crypto";
+
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+export function verifyPassword(password: string, stored: string): boolean {
+  try {
+    const [salt, hash] = stored.split(":");
+    if (!salt || !hash) return false;
+    const computedHash = scryptSync(password, salt, 64).toString("hex");
+    return hash === computedHash;
+  } catch (error) {
+    return false;
+  }
+}

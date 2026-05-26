@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+prisma/dev.db
+prisma/*.db
+
+# npm cache
+.npm-cache/
+.npm/
+
+# Prisma generated client (auto-regenerated)
+node_modules/@prisma/client/
+npm-cache/
+fix-metadata.js
+inject-metadata.js
