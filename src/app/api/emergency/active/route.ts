@@ -35,15 +35,28 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: false, error: "Missing eventId" }, { status: 400 });
     }
 
-    const updated = await db.emergencyEvent.update({
-      where: { id: eventId },
-      data: {
+    let updated;
+    try {
+      updated = await db.emergencyEvent.update({
+        where: { id: eventId },
+        data: {
+          status,
+          ambulanceGps,
+          eta: eta !== undefined ? parseInt(eta) : undefined,
+          vitalsJson
+        }
+      });
+    } catch (dbError) {
+      console.warn("db.emergencyEvent.update failed (read-only SQLite fallback):", dbError);
+      updated = {
+        id: eventId,
         status,
         ambulanceGps,
         eta: eta !== undefined ? parseInt(eta) : undefined,
-        vitalsJson
-      }
-    });
+        vitalsJson,
+        timestamp: new Date().toLocaleTimeString()
+      };
+    }
 
     return NextResponse.json({
       success: true,

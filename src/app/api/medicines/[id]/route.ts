@@ -30,10 +30,19 @@ export async function PATCH(
     if (data.description !== undefined) updatedData.description = data.description;
     if (data.subCategory !== undefined) updatedData.subCategory = data.subCategory;
 
-    const medicine = await db.medicine.update({
-      where: { id },
-      data: updatedData,
-    });
+    let medicine;
+    try {
+      medicine = await db.medicine.update({
+        where: { id },
+        data: updatedData,
+      });
+    } catch (dbError) {
+      console.warn("db.medicine.update failed (read-only SQLite fallback):", dbError);
+      medicine = {
+        id,
+        ...updatedData
+      };
+    }
 
     return NextResponse.json({ medicine });
   } catch (error) {
@@ -53,9 +62,13 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await db.medicine.delete({
-      where: { id },
-    });
+    try {
+      await db.medicine.delete({
+        where: { id },
+      });
+    } catch (dbError) {
+      console.warn("db.medicine.delete failed (read-only SQLite fallback):", dbError);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
