@@ -47,6 +47,7 @@ interface HealixSOSOverlayProps {
 
 // Emergency types configuration
 const EMERGENCY_CATEGORIES = [
+  { id: "unknown", label: "Unknown Critical", icon: HelpCircle, severity: "Critical", color: "from-slate-700 to-slate-800" },
   { id: "heart_attack", label: "Heart Attack", icon: Heart, severity: "Critical", color: "from-red-600 to-rose-700" },
   { id: "stroke", label: "Stroke", icon: Brain, severity: "Critical", color: "from-purple-600 to-indigo-700" },
   { id: "breathing", label: "Breathing Difficulty", icon: Wind, severity: "Critical", color: "from-blue-600 to-cyan-700" },
@@ -59,9 +60,257 @@ const EMERGENCY_CATEGORIES = [
   { id: "burns", label: "Burns", icon: Flame, severity: "Urgent", color: "from-orange-700 to-red-600" },
   { id: "pregnancy", label: "Pregnancy Emergency", icon: Sparkles, severity: "Urgent", color: "from-pink-600 to-rose-700" },
   { id: "child", label: "Child Emergency", icon: StarIcon, severity: "Critical", color: "from-cyan-600 to-blue-700" },
-  { id: "mental", label: "Mental Crisis", icon: Users, severity: "Mild", color: "from-teal-600 to-emerald-700" },
-  { id: "unknown", label: "Unknown Critical", icon: HelpCircle, severity: "Critical", color: "from-slate-700 to-slate-800" },
+  { id: "mental", label: "Mental Health Crisis", icon: Users, severity: "Mild", color: "from-teal-600 to-emerald-700" },
+  { id: "suicide", label: "Suicide Attempt", icon: AlertCircle, severity: "Critical", color: "from-red-600 to-rose-700" },
 ];
+
+const EMERGENCY_GUIDANCE: Record<string, {
+  title: string;
+  illustration: React.FC;
+  steps: string[];
+}> = {
+  unknown: {
+    title: "Assess & Support",
+    illustration: () => (
+      <svg className="w-24 h-24 text-slate-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M20 70 C30 65, 70 65, 80 70 M50 25 C45 25, 45 35, 50 35 C55 35, 55 25, 50 25" strokeLinecap="round" />
+        <path d="M50 35 L50 65 M50 45 L30 50 M50 45 L70 50 M50 65 L40 80 M50 65 L60 80" strokeLinecap="round" />
+        <circle cx="50" cy="50" r="45" strokeDasharray="4 4" className="animate-spin text-slate-300" style={{ animationDuration: "15s" }} />
+      </svg>
+    ),
+    steps: [
+      "Check responsiveness: Tap shoulders and ask loudly, 'Are you okay?'",
+      "Check breathing: Watch the chest for rise and fall (5-10 seconds).",
+      "If unresponsive but breathing, place in the Recovery Position on their side.",
+      "Keep them warm and quiet, and stay close until help arrives."
+    ]
+  },
+  heart_attack: {
+    title: "Sit Upright & Chew Aspirin",
+    illustration: () => (
+      <svg className="w-24 h-24 text-red-600 mx-auto animate-pulse" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 35 C12 20, 35 10, 50 30 C65 10, 88 20, 88 35 C88 60, 50 85, 50 85 C50 85, 12 60, 12 35 Z" fill="rgba(239, 68, 68, 0.1)" />
+        <circle cx="50" cy="38" r="8" className="fill-red-600" />
+        <line x1="50" y1="38" x2="50" y2="80" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    ),
+    steps: [
+      "Help the person sit upright in a comfortable position (rest against a wall/chair).",
+      "Loosen all tight clothing around the neck, chest, and waist to assist breathing.",
+      "Chew one adult aspirin (300mg) if they are conscious and not allergic.",
+      "Calm the patient: Keep them still and reassure them help is arriving."
+    ]
+  },
+  stroke: {
+    title: "FAST Assessment Protocol",
+    illustration: () => (
+      <svg className="w-24 h-24 text-purple-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="15" y="15" width="70" height="70" rx="10" strokeDasharray="4 4" />
+        <circle cx="50" cy="45" r="18" fill="rgba(147, 51, 234, 0.1)" />
+        <path d="M42 42 A 2 2 0 0 1 46 42 M54 42 A 2 2 0 0 1 58 42" strokeLinecap="round" />
+        <path d="M44 55 Q 50 51 54 58" strokeLinecap="round" strokeWidth="2.5" />
+      </svg>
+    ),
+    steps: [
+      "F - Face Drooping: Ask them to smile. Does one side of the face droop?",
+      "A - Arm Weakness: Ask them to raise both arms. Does one drift downward?",
+      "S - Speech Difficulty: Ask them to repeat a simple phrase. Is it slurred?",
+      "T - Time to call 112: Note the exact time symptoms started for the doctors."
+    ]
+  },
+  breathing: {
+    title: "Sit Up & Use Inhaler",
+    illustration: () => (
+      <svg className="w-24 h-24 text-blue-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M35 30 C30 30, 20 40, 20 60 C20 80, 45 80, 45 60 C45 45, 38 30, 35 30 Z" fill="rgba(59, 130, 246, 0.1)" />
+        <path d="M65 30 C70 30, 80 40, 80 60 C80 80, 55 80, 55 60 C55 45, 62 30, 65 30 Z" fill="rgba(59, 130, 246, 0.1)" />
+        <path d="M48 20 L48 45 M52 20 L52 45" strokeWidth="3" />
+        <path d="M40 10 Q 50 5 60 10 M35 15 Q 50 10 65 15" strokeLinecap="round" className="animate-pulse" />
+      </svg>
+    ),
+    steps: [
+      "Sit the person upright immediately. Do not allow them to lie down.",
+      "Help them use their emergency rescue inhaler (salbutamol/asthma pump).",
+      "Stay calm and encourage them to take slow, focused belly breaths.",
+      "Keep the room well ventilated: Open windows and clear any crowds."
+    ]
+  },
+  seizure: {
+    title: "Protect Head & Clear Space",
+    illustration: () => (
+      <svg className="w-24 h-24 text-amber-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M50 15 L25 80 L75 80 Z" strokeDasharray="3 3" />
+        <circle cx="50" cy="45" r="10" className="animate-ping" fill="rgba(245, 158, 11, 0.2)" />
+        <circle cx="50" cy="45" r="7" className="fill-amber-500" />
+      </svg>
+    ),
+    steps: [
+      "Cushion their head: Place something soft (folded jacket/pillow) under it.",
+      "Clear the area of hard, sharp, or hot objects to prevent injury.",
+      "Do NOT hold the person down or try to stop their movements.",
+      "Do NOT put anything in their mouth (no objects, water, or keys)."
+    ]
+  },
+  bleeding: {
+    title: "Apply Pressure & Elevate",
+    illustration: () => (
+      <svg className="w-24 h-24 text-red-700 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="25" y="25" width="50" height="50" rx="6" fill="rgba(185, 28, 28, 0.1)" />
+        <path d="M35 50 H65 M50 35 V65" strokeWidth="4" strokeLinecap="round" />
+        <circle cx="50" cy="50" r="12" className="animate-ping text-red-500" />
+      </svg>
+    ),
+    steps: [
+      "Press firmly: Apply constant, direct pressure to the wound with a clean cloth.",
+      "If bleeding is severe and from a limb, elevate it above heart level.",
+      "Do NOT remove the cloth if it gets soaked; add another cloth on top.",
+      "Keep pressure applied continuously until paramedics arrive and take over."
+    ]
+  },
+  trauma: {
+    title: "Keep Neck Stable & Still",
+    illustration: () => (
+      <svg className="w-24 h-24 text-orange-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="30" y="20" width="40" height="60" rx="8" fill="rgba(249, 115, 22, 0.1)" />
+        <line x1="30" y1="50" x2="70" y2="50" strokeWidth="3" />
+        <line x1="50" y1="20" x2="50" y2="80" strokeDasharray="4 4" />
+      </svg>
+    ),
+    steps: [
+      "Do NOT move the person unless there is an immediate danger (fire, explosion).",
+      "Support their head and neck: Keep them completely straight and still.",
+      "Control any visible bleeding with gentle, direct pressure.",
+      "Reassure the person, keep them warm with a blanket, and monitor breathing."
+    ]
+  },
+  unconscious: {
+    title: "Recovery Position",
+    illustration: () => (
+      <svg className="w-24 h-24 text-purple-700 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="20" y="35" width="60" height="30" rx="15" fill="rgba(109, 40, 217, 0.1)" />
+        <circle cx="70" cy="50" r="6" />
+        <path d="M30 50 C40 52, 60 52, 70 50" strokeLinecap="round" />
+      </svg>
+    ),
+    steps: [
+      "Check breathing: Watch the chest rise and fall, feel for breath on your cheek.",
+      "If breathing, roll them onto their side into the Recovery Position to clear airway.",
+      "Tilt their head back slightly to keep their airway open and unobstructed.",
+      "If NOT breathing, start CPR immediately (30 compressions, 2 breaths)."
+    ]
+  },
+  poisoning: {
+    title: "Identify & Do Not Vomit",
+    illustration: () => (
+      <svg className="w-24 h-24 text-emerald-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M40 25 L60 25 L65 40 L60 85 L40 85 L35 40 Z" fill="rgba(16, 185, 129, 0.1)" />
+        <path d="M38 45 H62" />
+        <circle cx="50" cy="65" r="5" className="fill-emerald-500" />
+      </svg>
+    ),
+    steps: [
+      "Find the poison: Identify the chemical, container, or pill bottle immediately.",
+      "Do NOT induce vomiting unless specifically instructed by a medical expert.",
+      "If the chemical is on skin or eyes, rinse with running water for 15-20 minutes.",
+      "Keep the poison container ready to show to the emergency medical team."
+    ]
+  },
+  choking: {
+    title: "Abdominal Thrusts",
+    illustration: () => (
+      <svg className="w-24 h-24 text-red-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="50" cy="30" r="10" />
+        <path d="M50 40 L50 75 M50 48 L35 60 M50 48 L65 60" />
+        <path d="M40 53 Q 50 45 60 53" stroke="rgba(220, 38, 38, 0.8)" strokeWidth="3" className="animate-bounce" />
+      </svg>
+    ),
+    steps: [
+      "Ask, 'Are you choking?' If they can cough or speak, encourage them to cough.",
+      "If they cannot speak or breathe, stand behind them and lean them forward.",
+      "Give 5 sharp back blows between their shoulder blades with the heel of your hand.",
+      "Perform 5 quick upward abdominal thrusts (Heimlich maneuver) above the navel."
+    ]
+  },
+  burns: {
+    title: "Cool Running Water",
+    illustration: () => (
+      <svg className="w-24 h-24 text-orange-700 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M50 15 Q40 35 30 55 C20 75, 40 85, 50 85 C60 85, 80 75, 70 55 Q60 35 50 15 Z" fill="rgba(234, 88, 12, 0.1)" />
+        <path d="M45 40 Q50 30 55 40 Q50 50 45 40 Z" className="animate-pulse fill-orange-500" />
+      </svg>
+    ),
+    steps: [
+      "Cool the burn: Run cool (not cold/ice) tap water over it for 10-20 minutes.",
+      "Do NOT apply ice, butter, toothpaste, or ointments to the burn area.",
+      "Remove loose clothing, jewelry, or rings near the burn before swelling starts.",
+      "Cover the burn loosely with clean cling wrap or a sterile, non-fluffy bandage."
+    ]
+  },
+  pregnancy: {
+    title: "Lay on Left Side",
+    illustration: () => (
+      <svg className="w-24 h-24 text-pink-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="50" cy="50" r="30" fill="rgba(219, 39, 119, 0.1)" />
+        <path d="M42 45 C42 35, 58 35, 58 45 C58 55, 42 55, 42 65 C42 75, 58 75, 58 65" />
+      </svg>
+    ),
+    steps: [
+      "Have the mother lie on her Left Side to optimize blood flow to the placenta.",
+      "Support her back and knees with cushions/pillows to maximize comfort.",
+      "Encourage slow, gentle breathing and reassure her that help is on the way.",
+      "Prepare any pregnancy medical files/prescriptions to hand to the paramedics."
+    ]
+  },
+  child: {
+    title: "Pediatric Triage Plan",
+    illustration: () => (
+      <svg className="w-24 h-24 text-cyan-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="50" cy="40" r="12" fill="rgba(6, 182, 212, 0.1)" />
+        <path d="M50 52 L50 80 M50 60 L38 72 M50 60 L62 72" />
+        <path d="M45 35 Q50 30 55 35" strokeLinecap="round" />
+      </svg>
+    ),
+    steps: [
+      "For choking: Lay the child face-down along your forearm; give 5 gentle back blows.",
+      "For CPR: Use 2 fingers on the center of the chest for infants (compress 1.5 inches).",
+      "Give 30 quick compressions, followed by 2 gentle breaths (just puffing cheeks).",
+      "Stay calm, talk to the child in a soothing voice, and wait for the response team."
+    ]
+  },
+  mental: {
+    title: "Calming Grounding Space",
+    illustration: () => (
+      <svg className="w-24 h-24 text-teal-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="50" cy="50" r="20" fill="rgba(13, 148, 136, 0.1)" className="animate-neural-pulse" />
+        <circle cx="50" cy="50" r="30" strokeDasharray="3 3" />
+        <circle cx="50" cy="50" r="40" strokeDasharray="5 5" />
+        <path d="M40 50 C45 45, 55 45, 60 50 C55 55, 45 55, 40 50" strokeLinecap="round" />
+      </svg>
+    ),
+    steps: [
+      "Find a quiet, safe space away from loud noises or flashing screens.",
+      "Use the 4-7-8 Breathing Technique: Inhale for 4s, hold for 7s, exhale for 8s.",
+      "Focus on the present: Name 5 things you can see, 4 you can touch, 3 you can hear.",
+      "Remember: This wave of intense emotion is temporary and will pass. You are safe."
+    ]
+  },
+  suicide: {
+    title: "Safe Environment & Support",
+    illustration: () => (
+      <svg className="w-24 h-24 text-rose-600 mx-auto" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M25 65 C35 50, 45 60, 50 65 C55 60, 65 50, 75 65" fill="rgba(225, 29, 72, 0.1)" strokeLinecap="round" />
+        <path d="M30 70 C40 60, 50 65, 50 70 C50 65, 60 60, 70 70 L65 85 H35 Z" fill="rgba(225, 29, 72, 0.1)" />
+        <circle cx="50" cy="30" r="10" />
+      </svg>
+    ),
+    steps: [
+      "Ensure safety first: Remove any dangerous items, medicines, or hazards immediately.",
+      "Stay together: Do NOT leave the person alone under any circumstances.",
+      "Listen with empathy: Avoid judging, arguing, or lecturing. Validate their pain.",
+      "Helpline alert: Call 112 / 102 now, or contact Vandrevala Foundation at +91 9999 666 555."
+    ]
+  }
+};
 
 function StarIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -206,6 +455,11 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
 
   // Custom speech synthesis text mappings
   const voicePrompts: Record<string, Record<string, string>> = {
+    unknown: {
+      en: "Emergency assistance is initiated. Please stay calm. Try to keep the patient comfortable and monitor their breathing. Paramedics are on the way.",
+      hi: "आपातकालीन सहायता शुरू कर दी गई है। कृपया शांत रहें। मरीज को आरामदायक स्थिति में रखें और उनकी सांसों पर नज़र रखें। मदद आ रही है।",
+      hinglish: "Emergency help initiate ho gayi hai. Calm rahiye. Patient ko comfortable rakhein aur breathing check karte rahein. Team aa rahi hai.",
+    },
     heart_attack: {
       en: "Heart emergency detected. Sit upright immediately. Unlock tight clothing. Take slow, deep breaths. Chew an aspirin if you have one.",
       hi: "दिल की आपातकालीन स्थिति। तुरंत सीधे बैठ जाएं। तंग कपड़े ढीले करें। धीमी और गहरी सांस लें। यदि उपलब्ध हो, तो एक एस्पिरिन चबाएं।",
@@ -221,15 +475,60 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
       hi: "सांस लेने में तकलीफ। सीधे बैठें। अस्थमा होने पर इनहेलर का उपयोग करें। कमरे को हवादार रखें। शांत रहें।",
       hinglish: "Breathing difficulty. Seedhe baith jayein. Asthma hai to inhaler use karein. Room ko हवादार rakhein. Calm rahein.",
     },
+    seizure: {
+      en: "Seizure detected. Protect their head with something soft. Clear all nearby objects. Do not hold them down or insert anything in their mouth.",
+      hi: "दौरे की स्थिति। सिर के नीचे कुछ मुलायम रखें। आस-पास की चीजें हटा दें। उन्हें जबरदस्ती न पकड़ें और मुंह में कुछ न डालें।",
+      hinglish: "Seizure detected. Head ke neeche soft kapda rakhein. Aas-paas ki cheezein door karein. Unhe hold na karein aur mouth me kuch na dalein.",
+    },
     bleeding: {
       en: "Severe bleeding. Apply firm, direct pressure on the wound using a clean cloth. Elevate the bleeding limb above heart level.",
       hi: "गंभीर रक्तस्राव। साफ कपड़े से घाव पर सीधा दबाव डालें। बहते हुए हाथ या पैर को दिल के स्तर से ऊपर उठाएं।",
       hinglish: "Severe bleeding. Clean kapde se wound par direct pressure dalein. Bleeding limb ko heart level se upar uthayein.",
     },
+    trauma: {
+      en: "Trauma detected. Keep head and neck completely still. Do not move the patient. Apply gentle pressure to stop any visible bleeding.",
+      hi: "आघात या चोट। सिर और गर्दन को पूरी तरह से स्थिर रखें। मरीज को न हिलाएं। बहते खून को रोकने के लिए हल्का दबाव डालें।",
+      hinglish: "Trauma incident. Head aur neck ko still rakhein. Patient ko bilkul na hilayein. Bleeding rokne ke liye pressure apply karein.",
+    },
+    unconscious: {
+      en: "Unconscious person. Check if they are breathing. If breathing normally, roll them onto their side into the recovery position.",
+      hi: "बेहोश मरीज। सांस की जांच करें। यदि सांस चल रही है, तो उन्हें धीरे से करवट दिलाकर रिकवरी पोजीशन में लेटाएं।",
+      hinglish: "Unconscious patient. Breathing check karein. Agar breathing chal rahi hai to side me recovery position me leetayein.",
+    },
+    poisoning: {
+      en: "Poisoning incident. Identify the substance. Do not induce vomiting. Flush skin or eyes with cool water if exposed.",
+      hi: "जहर या विषाक्तता। पदार्थ की पहचान करें। उलटी कराने की कोशिश न करें। यदि त्वचा या आंखों पर लगा है, तो ठंडे पानी से धोएं।",
+      hinglish: "Poisoning case. Substance identify karein. Vomiting induce na karein. Skin ya eyes ko clean paani se wash karein.",
+    },
     choking: {
       en: "Choking. Stand behind them. Perform quick upward abdominal thrusts. Repeat until the airway is clear.",
       hi: "दम घुटना। उनके पीछे खड़े हों। पेट पर तेजी से ऊपर की ओर दबाव डालें। सांस नली साफ होने तक दोहराएं।",
       hinglish: "Choking. Unke peeche khade ho. Abdominal thrusts lagayein. Airway clear hone tak repeat karein.",
+    },
+    burns: {
+      en: "Burns. Run cool tap water over the burn for ten to twenty minutes. Do not apply ice, butter, or ointment.",
+      hi: "जलना। जले हुए हिस्से पर 10 से 20 मिनट तक ठंडा पानी डालें। बर्फ, मक्खन या कोई मलहम न लगाएं।",
+      hinglish: "Burns. Jale hue part par 10-20 mins tak thanda paani dalein. Ice, butter, ya ointment na lagayein.",
+    },
+    pregnancy: {
+      en: "Pregnancy emergency. Help the patient lie down on her left side. Keep her calm and warm until medical help arrives.",
+      hi: "गर्भावस्था आपातकाल। मरीज को बाईं करवट लेटने में मदद करें। उन्हें शांत और गर्म रखें जब तक कि एम्बुलेंस न आ जाए।",
+      hinglish: "Pregnancy emergency. Patient ko left side me letayein. Calm aur warm rakhein jab tak medical team na aa jaye.",
+    },
+    child: {
+      en: "Child emergency. Stay calm. Check airway. Speak in a soothing voice to keep them reassured. Paramedics are coming.",
+      hi: "बच्चे की आपातकालीन स्थिति। शांत रहें। सांस की जांच करें। उन्हें दिलासा देने के लिए प्यार से बात करें। डॉक्टर आ रहे हैं।",
+      hinglish: "Child emergency. Calm rahiye. Airway check karein. Soothing voice me baat karein. Medical team aa rahi hai.",
+    },
+    mental: {
+      en: "We are here for you. Take slow, deep breaths. Place one hand on your heart. Breathe in for four seconds, hold for four, and exhale slowly. You are safe now.",
+      hi: "हम आपके साथ हैं। धीरे-धीरे और गहरी सांस लें। अपना हाथ अपने दिल पर रखें। चार सेकंड के लिए सांस अंदर लें, चार सेकंड रोकें, और धीरे-धीरे छोड़ें। आप सुरक्षित हैं।",
+      hinglish: "Hum aapke sath hain. Dheere aur gehri saans lein. Hand ko heart par rakhein. 4 seconds ke liye saans andar lein, hold karein, aur slow exhale karein. Aap safe hain."
+    },
+    suicide: {
+      en: "Please stay with us. You matter, and you do not have to carry this alone. Help is on the way. Sit down in a comfortable position, focus on my voice, and take slow breaths.",
+      hi: "कृपया हमारे साथ बने रहें। आपका जीवन बहुत महत्वपूर्ण है, और आप अकेले नहीं हैं। मदद जल्द ही पहुंच रही है। आराम से बैठें और मेरी आवाज पर ध्यान दें।",
+      hinglish: "Please humare sath rahiye. Aapki life bahut important hai, aap akele nahi hain. Help jaldi pahunch rahi hai. Aaram se baith jayein aur meri voice par focus karein."
     }
   };
 
@@ -267,21 +566,42 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
     }
 
     const utterance = new SpeechSynthesisUtterance(adaptedText);
+    const voices = window.speechSynthesis.getVoices();
+    let selectedVoice: SpeechSynthesisVoice | null = null;
+
     if (voiceLanguage === "hi") {
       utterance.lang = "hi-IN";
+      const hiVoices = voices.filter(v => v.lang.startsWith("hi"));
+      selectedVoice = hiVoices.find(v => v.name.toLowerCase().includes("google")) ||
+                      hiVoices.find(v => v.name.toLowerCase().includes("natural")) ||
+                      hiVoices[0] || null;
     } else {
       utterance.lang = "en-IN";
+      const enVoices = voices.filter(v => v.lang.startsWith("en"));
+      selectedVoice = enVoices.find(v => v.name.toLowerCase().includes("google") && v.name.toLowerCase().includes("natural")) ||
+                      enVoices.find(v => v.name.toLowerCase().includes("samantha")) ||
+                      enVoices.find(v => v.name.toLowerCase().includes("siri")) ||
+                      enVoices.find(v => v.name.toLowerCase().includes("zira")) ||
+                      enVoices.find(v => v.name.toLowerCase().includes("hazel")) ||
+                      enVoices.find(v => v.name.toLowerCase().includes("google")) ||
+                      enVoices.find(v => v.name.toLowerCase().includes("female")) ||
+                      enVoices[0] || null;
     }
 
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    // Set gentle, supportive pitch and rate to reduce panic
     if (voiceTone === "reassurance") {
-      utterance.pitch = 1.15;
-      utterance.rate = 0.85; // slower, calmer
+      utterance.pitch = 1.08; // supportive pitch (1.05-1.1)
+      utterance.rate = 0.88;  // gentle speed (0.85-0.90) to reduce panic
     } else if (voiceTone === "urgent") {
-      utterance.pitch = 0.95;
-      utterance.rate = 1.15; // faster, urgent
+      utterance.pitch = 1.06;
+      utterance.rate = 0.90;
     } else { // family
-      utterance.pitch = 1.0;
-      utterance.rate = 0.95; // moderate
+      utterance.pitch = 1.07;
+      utterance.rate = 0.89;
     }
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -1155,31 +1475,31 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex flex-col overflow-hidden bg-black/95 backdrop-blur-xl text-white font-poppins transition-all duration-300">
+    <div className="fixed inset-0 z-[150] flex flex-col overflow-hidden bg-[#FAF9F6] text-slate-800 font-poppins transition-all duration-300">
       
       {/* Full-Screen ECG Grid Line Overlay */}
       <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <pattern id="ecg-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(220, 38, 38, 0.4)" strokeWidth="0.5" />
-            <path d="M 8 0 L 8 40 M 16 0 L 16 40 M 24 0 L 24 40 M 32 0 L 32 40 M 0 8 L 40 8 M 0 16 L 40 16 M 0 24 L 40 24 M 0 32 L 40 32" fill="none" stroke="rgba(220, 38, 38, 0.15)" strokeWidth="0.25" />
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(100, 116, 139, 0.15)" strokeWidth="0.5" />
+            <path d="M 8 0 L 8 40 M 16 0 L 16 40 M 24 0 L 24 40 M 32 0 L 32 40 M 0 8 L 40 8 M 0 16 L 40 16 M 0 24 L 40 24 M 0 32 L 40 32" fill="none" stroke="rgba(100, 116, 139, 0.05)" strokeWidth="0.25" />
           </pattern>
           <rect width="100%" height="100%" fill="url(#ecg-grid)" />
         </svg>
       </div>
 
       {/* Top Banner Navigation */}
-      <header className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 bg-black/40 backdrop-blur-md shrink-0 gap-2 sm:gap-0">
+      <header className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 bg-[#FAF9F6]/90 backdrop-blur-md shrink-0 gap-2 sm:gap-0">
         <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
           <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/35 relative">
             <span className="absolute -inset-1 rounded-xl bg-red-500/25 animate-ping" />
             <Activity className="h-5 w-5 text-white animate-pulse" />
           </div>
           <div>
-            <h1 className="text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-gradient-orange">
+            <h1 className="text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-red-600">
               Healix Predictive Emergency Clinical Intelligence Network
             </h1>
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest">
               Predictive Life Support & Dispatch Grid
             </p>
           </div>
@@ -1192,7 +1512,7 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
             className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeMode === "triage"
                 ? "bg-red-600 text-white shadow-md shadow-red-600/20"
-                : "bg-white/5 hover:bg-white/10 text-gray-300 animate-pulse"
+                : "bg-slate-200 hover:bg-slate-300 text-slate-700"
             }`}
           >
             Triage Selection
@@ -1208,7 +1528,7 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
             className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeMode === "guidance"
                 ? "bg-red-600 text-white shadow-md shadow-red-600/20"
-                : "bg-white/5 hover:bg-white/10 text-gray-300"
+                : "bg-slate-200 hover:bg-slate-300 text-slate-700"
             }`}
           >
             Life Support Guidance
@@ -1218,7 +1538,7 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
             className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap shrink-0 ${
               activeMode === "admin"
                 ? "bg-orange-600 text-white shadow-md shadow-orange-600/20"
-                : "bg-white/5 hover:bg-white/10 text-gray-300"
+                : "bg-slate-200 hover:bg-slate-300 text-slate-700"
             }`}
           >
             <Compass className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -1226,10 +1546,10 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
           </button>
           <button
             onClick={() => setActiveMode("moat")}
-            className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1 border border-emerald-500/30 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1 border border-emerald-600/30 whitespace-nowrap shrink-0 ${
               activeMode === "moat"
                 ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                : "bg-emerald-950/30 hover:bg-emerald-950/60 text-emerald-400"
+                : "bg-emerald-100 hover:bg-emerald-200 text-emerald-800"
             }`}
           >
             <Shield className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -1238,7 +1558,7 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
           
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white border border-white/10 shrink-0 ml-auto sm:ml-1"
+            className="p-1.5 rounded-full bg-slate-200 hover:bg-slate-300 transition-all text-slate-700 border border-slate-350 shrink-0 ml-auto sm:ml-1"
             aria-label="Close SOS screen"
           >
             <X className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -1251,30 +1571,113 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
         
         {/* ================= MODE 1: TRIAGE SELECTION ================= */}
         {activeMode === "triage" && (
-          <div className="flex-grow flex flex-col overflow-y-auto px-6 py-6 md:px-12 items-center">
+          <div className="flex-grow flex flex-col overflow-y-auto px-6 py-6 md:px-12 items-center w-full">
             
-            {/* Audio Wave / Microphone Status panel & Radial Severity Visualization (2-Column Grid) */}
-            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-6 mb-8 shrink-0">
+            {/* 1. Direct Emergency Helpline Button (Top of Triage view) */}
+            <a
+              href="tel:112"
+              className="w-full max-w-5xl mb-8 bg-gradient-to-r from-red-600 to-rose-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg hover:scale-[1.01] transition-all cursor-pointer relative overflow-hidden group border border-red-500/25 shrink-0"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full filter blur-xl -z-10 group-hover:scale-125 transition-transform" />
+              <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+                <div className="h-14 w-14 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
+                  <Phone className="h-7 w-7 text-white fill-current" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-black uppercase tracking-wider text-white">
+                    Direct Emergency Helpline
+                  </h3>
+                  <p className="text-xs text-red-100 font-medium">
+                    Call 112 / 102 immediately for local emergency ambulance & physician dispatch
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2 text-white font-extrabold uppercase text-xs sm:text-sm tracking-widest bg-black/20 px-4 py-2.5 rounded-full border border-white/25">
+                <span>Call Helpline Now</span>
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </a>
+
+            {/* 2. AI Question header */}
+            <div className="text-center mb-6 max-w-2xl shrink-0">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-800 mb-2 uppercase">
+                What emergency are you experiencing?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">
+                Select a category tile below for immediate live triage guidance, visual checklists, and smart ambulance routing.
+              </p>
+            </div>
+
+            {/* 3. Categories Grid (Moved to top of Triage view) */}
+            <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pb-8 shrink-0">
+              {EMERGENCY_CATEGORIES.map((category) => {
+                const IconComp = category.icon;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category.id)}
+                    className={`relative p-5 pt-7 pb-5 rounded-2xl text-left border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between h-40 group ${
+                      selectedEmergency === category.id
+                        ? "bg-slate-200 border-red-500 shadow-md scale-105"
+                        : "bg-slate-100/90 border-slate-200/80 hover:border-red-500/40 hover:bg-slate-200/60 hover:-translate-y-1"
+                    }`}
+                  >
+                    {/* Gradient top concern stripe */}
+                    <div className={`absolute top-0 left-0 right-0 h-[6px] bg-gradient-to-r ${category.color}`} />
+                    
+                    {/* Decorative subtle background gradient */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-slate-200/10 rounded-full filter blur-md -z-10 group-hover:scale-125 transition-transform" />
+
+                    <div className="flex items-center justify-between w-full">
+                      <div className="h-12 w-12 rounded-xl bg-slate-200/80 flex items-center justify-center text-slate-700 group-hover:scale-110 transition-transform">
+                        <IconComp className="h-6 w-6 text-slate-700" />
+                      </div>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border ${
+                        category.severity === "Critical"
+                          ? "bg-red-500/10 border-red-500/20 text-red-600"
+                          : category.severity === "Urgent"
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-600"
+                          : "bg-teal-500/10 border-teal-500/20 text-teal-600"
+                      }`}>
+                        {category.severity}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-extrabold uppercase text-slate-800 tracking-wide group-hover:text-red-600 transition-colors">
+                        {category.label}
+                      </h3>
+                      <span className="text-[10px] text-slate-500 block group-hover:text-slate-700 transition-colors font-medium">
+                        Life-saving protocol
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 4. Audio Wave / Microphone Status panel & Radial Severity Visualization (2-Column Grid) */}
+            <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-6 mb-8 shrink-0">
               
               {/* Left Col: Mic Wave & Logs (Col-Span 7) */}
-              <div className="md:col-span-7 bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl glass-panel-dark relative overflow-hidden flex flex-col justify-between">
+              <div className="md:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 to-orange-500 animate-pulse" />
                 
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black uppercase text-red-500 tracking-widest flex items-center gap-1.5">
-                    <Mic className="h-4 w-4 animate-bounce text-red-500" />
+                  <span className="text-[10px] font-black uppercase text-red-600 tracking-widest flex items-center gap-1.5">
+                    <Mic className="h-4 w-4 animate-bounce text-red-600" />
                     Live Voice Triage Receiver (Web Audio API active)
                   </span>
-                  <span className="text-[9px] font-bold text-gray-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                     {triageStage === "listening" ? "LISTEN ACTIVE" : triageStage === "analyzing" ? "ANALYZING SPEECH" : "COMPLETED"}
                   </span>
                 </div>
 
-                <div className="h-20 w-full mb-4 bg-black/40 rounded-2xl relative overflow-hidden flex items-center justify-center">
+                <div className="h-20 w-full mb-4 bg-slate-50 rounded-2xl relative overflow-hidden flex items-center justify-center border border-slate-150">
                   <canvas ref={canvasRef} width={500} height={80} className="w-full h-full block" />
                   <div className="absolute inset-0 flex items-center justify-center bg-transparent pointer-events-none">
                     {triageStage === "listening" && (
-                      <span className="text-xs text-red-400 font-bold uppercase tracking-wider animate-pulse bg-black/60 px-3 py-1 rounded-full border border-red-500/20">
+                      <span className="text-xs text-red-600 font-bold uppercase tracking-wider animate-pulse bg-white/90 px-3 py-1 rounded-full border border-red-500/25 shadow-sm">
                         Speak now or select category below
                       </span>
                     )}
@@ -1283,32 +1686,32 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
 
                 {/* Triage Analytics Live Gauges */}
                 <div className="grid grid-cols-4 gap-3 mb-4 text-xs font-mono">
-                  <div className="bg-white/5 p-2 rounded border border-white/5 text-center">
-                    <span className="text-[8px] text-gray-500 block">Panic Index</span>
-                    <span className="text-red-400 font-bold">{voiceMetrics.panicIndex}%</span>
+                  <div className="bg-slate-50 p-2 rounded border border-slate-200 text-center">
+                    <span className="text-[8px] text-slate-500 block font-bold">Panic Index</span>
+                    <span className="text-red-600 font-black">{voiceMetrics.panicIndex}%</span>
                   </div>
-                  <div className="bg-white/5 p-2 rounded border border-white/5 text-center">
-                    <span className="text-[8px] text-gray-500 block">Stress Level</span>
-                    <span className="text-orange-400 font-bold">{voiceMetrics.stressLevel}%</span>
+                  <div className="bg-slate-50 p-2 rounded border border-slate-200 text-center">
+                    <span className="text-[8px] text-slate-500 block font-bold">Stress Level</span>
+                    <span className="text-orange-600 font-black">{voiceMetrics.stressLevel}%</span>
                   </div>
-                  <div className="bg-white/5 p-2 rounded border border-white/5 text-center">
-                    <span className="text-[8px] text-gray-500 block">Respirations</span>
-                    <span className="text-blue-400 font-bold">{voiceMetrics.breathRate}/m</span>
+                  <div className="bg-slate-50 p-2 rounded border border-slate-200 text-center">
+                    <span className="text-[8px] text-slate-500 block font-bold">Respirations</span>
+                    <span className="text-blue-600 font-black">{voiceMetrics.breathRate}/m</span>
                   </div>
-                  <div className="bg-white/5 p-2 rounded border border-white/5 text-center">
-                    <span className="text-[8px] text-gray-500 block">Ambient Noise</span>
-                    <span className="text-teal-400 font-bold">{voiceMetrics.bgNoise} dB</span>
+                  <div className="bg-slate-50 p-2 rounded border border-slate-200 text-center">
+                    <span className="text-[8px] text-slate-500 block font-bold">Ambient Noise</span>
+                    <span className="text-teal-600 font-black">{voiceMetrics.bgNoise} dB</span>
                   </div>
                 </div>
 
                 {/* Logs output */}
-                <div className="h-28 overflow-y-auto text-left font-mono text-[10px] bg-black/50 p-3.5 rounded-xl border border-white/5 text-emerald-400 space-y-1">
+                <div className="h-28 overflow-y-auto text-left font-mono text-[10px] bg-slate-900 p-3.5 rounded-xl border border-slate-800 text-emerald-400 space-y-1">
                   {triageLogs.length === 0 ? (
-                    <p className="text-gray-500 italic">No audio classifications recorded yet. Start by tapping an emergency category card below or talking.</p>
+                    <p className="text-slate-400 italic">No audio classifications recorded yet. Start by tapping an emergency category card below or talking.</p>
                   ) : (
                     triageLogs.map((log, i) => (
                       <div key={i} className="flex items-start gap-1.5">
-                        <span className="text-gray-600">[{10 + i * 2}s]</span>
+                        <span className="text-slate-500">[{10 + i * 2}s]</span>
                         <span className={log.includes("Critical") || log.includes("Error") ? "text-red-400 font-bold" : ""}>{log}</span>
                       </div>
                     ))
@@ -1317,9 +1720,9 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
               </div>
 
               {/* Right Col: Live Radial Severity Visualization (Col-Span 5) */}
-              <div className="md:col-span-5 bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl glass-panel-dark relative overflow-hidden flex flex-col justify-between items-center text-center">
+              <div className="md:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between items-center text-center">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-red-600 animate-pulse" />
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-4">
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-4">
                   Live Severity Radial Analyzer
                 </span>
 
@@ -1327,7 +1730,7 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                   <svg className="w-full h-full -rotate-90">
                     <circle
                       fill="transparent"
-                      stroke="rgba(255,255,255,0.06)"
+                      stroke="rgba(0,0,0,0.03)"
                       strokeWidth={strokeWidth}
                       r={normalizedRadius}
                       cx={56}
@@ -1346,8 +1749,8 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                     />
                   </svg>
                   <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-[8px] text-gray-500 uppercase font-black">Confidence</span>
-                    <span className="text-sm font-mono font-extrabold text-white">{(severity.confidence * 100).toFixed(0)}%</span>
+                    <span className="text-[8px] text-slate-500 uppercase font-black">Confidence</span>
+                    <span className="text-sm font-mono font-extrabold text-slate-800">{(severity.confidence * 100).toFixed(0)}%</span>
                   </div>
                 </div>
 
@@ -1356,18 +1759,18 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                     {severity.label}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-left font-mono text-[9px] text-gray-400 mt-2 bg-black/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="grid grid-cols-2 gap-2 text-left font-mono text-[9px] text-slate-500 mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                     <div>
-                      <span className="text-[7.5px] text-gray-500 block">SPEECH DELAY</span>
-                      <span className="text-white font-bold">{severity.delay}</span>
+                      <span className="text-[7.5px] text-slate-400 block font-bold">SPEECH DELAY</span>
+                      <span className="text-slate-800 font-bold">{severity.delay}</span>
                     </div>
                     <div>
-                      <span className="text-[7.5px] text-gray-500 block">CONFUSION</span>
-                      <span className="text-white font-bold">{severity.confusion}</span>
+                      <span className="text-[7.5px] text-slate-400 block font-bold">CONFUSION</span>
+                      <span className="text-slate-800 font-bold">{severity.confusion}</span>
                     </div>
-                    <div className="col-span-2 pt-1 border-t border-white/5">
-                      <span className="text-[7.5px] text-gray-500 block">CONSCIOUSNESS INDICATOR</span>
-                      <span className="text-white font-bold">{severity.unconscious}</span>
+                    <div className="col-span-2 pt-1 border-t border-slate-200">
+                      <span className="text-[7.5px] text-slate-400 block font-bold">CONSCIOUSNESS INDICATOR</span>
+                      <span className="text-slate-800 font-bold">{severity.unconscious}</span>
                     </div>
                   </div>
                 </div>
@@ -1375,18 +1778,18 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
 
             </div>
 
-            {/* Resiliency & Wearable Integration Panel */}
-            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 shrink-0">
+            {/* 5. Resiliency & Wearable Integration Panel */}
+            <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 shrink-0">
               
               {/* Wearable Simulator Panel */}
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-5 shadow-2xl glass-panel-dark relative overflow-hidden flex flex-col justify-between">
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
                 <div>
-                  <h3 className="text-xs font-black uppercase text-white tracking-wider mb-3 flex items-center gap-1.5">
-                    <Cpu className="h-4 w-4 text-blue-400" />
+                  <h3 className="text-xs font-black uppercase text-slate-800 tracking-wider mb-3 flex items-center gap-1.5">
+                    <Cpu className="h-4 w-4 text-blue-500" />
                     Wearable Device Integration Emulator
                   </h3>
-                  <p className="text-[10px] text-gray-400 mb-4">
+                  <p className="text-[10px] text-slate-500 mb-4">
                     Simulate bio-telemetry triggers from connected smartwatches and ECG sensors to test instant auto-dispatch sequences.
                   </p>
                 </div>
@@ -1394,49 +1797,49 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <button
                     onClick={() => triggerWearableEmergency("oxygen_crash")}
-                    className="p-3 bg-red-950/20 hover:bg-red-950/40 border border-red-500/25 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                    className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
                   >
-                    <span className="text-[9px] text-red-400 font-extrabold uppercase">Oxygen Crash</span>
-                    <span className="text-[10px] text-white font-bold mt-1">SpO2 @ 81%</span>
-                    <span className="text-[8px] text-gray-500 mt-1">Auto Dispatch</span>
+                    <span className="text-[9px] text-red-600 font-extrabold uppercase">Oxygen Crash</span>
+                    <span className="text-[10px] text-slate-800 font-bold mt-1">SpO2 @ 81%</span>
+                    <span className="text-[8px] text-slate-500 mt-1">Auto Dispatch</span>
                   </button>
                   
                   <button
                     onClick={() => triggerWearableEmergency("abnormal_hr")}
-                    className="p-3 bg-red-950/20 hover:bg-red-950/40 border border-red-500/25 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                    className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
                   >
-                    <span className="text-[9px] text-red-400 font-extrabold uppercase">HR Spike</span>
-                    <span className="text-[10px] text-white font-bold mt-1">HR &gt; 165 BPM</span>
-                    <span className="text-[8px] text-gray-500 mt-1">Arrhythmia alert</span>
+                    <span className="text-[9px] text-red-600 font-extrabold uppercase">HR Spike</span>
+                    <span className="text-[10px] text-slate-800 font-bold mt-1">HR &gt; 165 BPM</span>
+                    <span className="text-[8px] text-slate-500 mt-1">Arrhythmia alert</span>
                   </button>
                   
                   <button
                     onClick={() => triggerWearableEmergency("arrhythmia")}
-                    className="p-3 bg-red-950/20 hover:bg-red-950/40 border border-red-500/25 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                    className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
                   >
-                    <span className="text-[9px] text-red-400 font-extrabold uppercase">ECG Check</span>
-                    <span className="text-[10px] text-white font-bold mt-1">Atrial Fibrillation</span>
-                    <span className="text-[8px] text-gray-500 mt-1">Critical trigger</span>
+                    <span className="text-[9px] text-red-600 font-extrabold uppercase">ECG Check</span>
+                    <span className="text-[10px] text-slate-800 font-bold mt-1">Atrial Fibrillation</span>
+                    <span className="text-[8px] text-slate-500 mt-1">Critical trigger</span>
                   </button>
                   
                   <button
                     onClick={() => triggerWearableEmergency("collapse")}
-                    className="p-3 bg-red-950/20 hover:bg-red-950/40 border border-red-500/25 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
+                    className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left cursor-pointer transition-all hover:scale-102 flex flex-col justify-between"
                   >
-                    <span className="text-[9px] text-red-400 font-extrabold uppercase">Collapse Alert</span>
-                    <span className="text-[10px] text-white font-bold mt-1">User Dropped</span>
-                    <span className="text-[8px] text-gray-500 mt-1">Immediate dispatch</span>
+                    <span className="text-[9px] text-red-600 font-extrabold uppercase">Collapse Alert</span>
+                    <span className="text-[10px] text-slate-800 font-bold mt-1">User Dropped</span>
+                    <span className="text-[8px] text-slate-500 mt-1">Immediate dispatch</span>
                   </button>
                 </div>
               </div>
 
               {/* Resiliency Offline Mode Panel */}
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-5 shadow-2xl glass-panel-dark relative overflow-hidden flex flex-col justify-between">
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
-                      <Layers className="h-4 w-4 text-emerald-400" />
+                    <h3 className="text-xs font-black uppercase text-slate-800 tracking-wider flex items-center gap-1.5">
+                      <Layers className="h-4 w-4 text-emerald-500" />
                       Offline Resiliency Layer
                     </h3>
                     <button
@@ -1444,86 +1847,34 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                       className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all cursor-pointer ${
                         isOfflineMode
                           ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
-                          : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                          : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
                       }`}
                     >
                       {isOfflineMode ? "DISCONNECT: OFFLINE" : "NETWORK: ONLINE"}
                     </button>
                   </div>
-                  <p className="text-[10px] text-gray-400 leading-relaxed mb-3">
+                  <p className="text-[10px] text-slate-500 leading-relaxed mb-3">
                     If internet signals cut during an emergency, Healix automatically shifts to pre-cached offline maps, local guide checklists, and encrypts GPS coordinates into emergency SMS text payloads.
                   </p>
                 </div>
 
                 {isOfflineMode ? (
-                  <div className="bg-emerald-950/20 border border-emerald-500/20 p-3 rounded-xl text-xs font-mono text-emerald-300 space-y-1.5">
+                  <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs font-mono text-emerald-800 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-black uppercase text-emerald-400">Distress SMS Relay</span>
-                      <span className="text-[8px] text-gray-500">COMPRESSED PAYLOAD</span>
+                      <span className="text-[9px] font-black uppercase text-emerald-700">Distress SMS Relay</span>
+                      <span className="text-[8px] text-slate-400">COMPRESSED PAYLOAD</span>
                     </div>
-                    <p className="text-[9px] break-all bg-black/40 p-2 rounded text-white border border-emerald-500/10 select-all">
+                    <p className="text-[9px] break-all bg-slate-900 p-2 rounded text-emerald-400 border border-slate-800 select-all">
                       HEALIX_SOS_LOC:{gpsCoordinates.lat.toFixed(4)},{gpsCoordinates.lng.toFixed(4)};SYM:{selectedEmergency || "CHEST_PAIN"};PANIC:{voiceMetrics.panicIndex};STRESS:{voiceMetrics.stressLevel};CONF:96
                     </p>
-                    <p className="text-[8.5px] text-gray-500">Auto relayed over local cellular distress channels.</p>
+                    <p className="text-[8.5px] text-slate-400">Auto relayed over local cellular distress channels.</p>
                   </div>
                 ) : (
-                  <div className="bg-black/40 border border-white/5 p-3.5 rounded-xl text-xs text-gray-500 text-center italic">
+                  <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-xs text-slate-500 text-center italic">
                     Awaiting offline switch to engage backup localized rescue.
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* AI Question header */}
-            <div className="text-center mb-6 max-w-xl shrink-0">
-              <h2 className="text-2xl font-black tracking-tight text-white mb-2 uppercase">
-                What emergency are you experiencing?
-              </h2>
-              <p className="text-xs text-gray-400">
-                Select the incident card below to start immediate local triage, load medical diagrams, and route ambulances using emergency intelligence.
-              </p>
-            </div>
-
-            {/* Categories Grid */}
-            <div className="w-full max-w-6xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pb-12">
-              {EMERGENCY_CATEGORIES.map((category) => {
-                const IconComp = category.icon;
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategorySelect(category.id)}
-                    className={`relative p-5 rounded-2xl text-left border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between h-36 group ${
-                      selectedEmergency === category.id
-                        ? "bg-gradient-to-br from-red-950 to-red-900 border-red-500 shadow-xl shadow-red-600/10 scale-105"
-                        : "bg-white/5 border-white/10 hover:border-red-500/40 hover:bg-white/10 hover:-translate-y-1"
-                    }`}
-                  >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-600/10 to-transparent rounded-full filter blur-md -z-10 group-hover:scale-125 transition-transform" />
-
-                    <div className="flex items-center justify-between w-full">
-                      <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
-                        <IconComp className="h-5 w-5 text-white" />
-                      </div>
-                      <span className={`text-[8.5px] font-extrabold uppercase px-2 py-0.5 rounded-md border ${
-                        category.severity === "Critical"
-                          ? "bg-red-500/15 border-red-500/35 text-red-400"
-                          : "bg-amber-500/15 border-amber-500/35 text-amber-400"
-                      }`}>
-                        {category.severity}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-black uppercase text-white tracking-wide">
-                        {category.label}
-                      </h3>
-                      <span className="text-[8.5px] text-gray-400 block group-hover:text-red-300 transition-colors">
-                        Life-saving protocol
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
             </div>
 
           </div>
@@ -1534,30 +1885,30 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
           <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
             
             {/* Left Panel: Clinical Triage and Response Instructions */}
-            <div className="w-full md:w-1/2 flex flex-col border-r border-white/10 overflow-y-auto p-6 bg-black/40">
+            <div className="w-full md:w-1/2 flex flex-col border-r border-slate-200 overflow-y-auto p-6 bg-[#FAF9F6] text-slate-800">
               
-              <div className="bg-red-950/40 border border-red-500/20 rounded-2xl p-5 mb-5 shrink-0 flex items-center justify-between">
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-5 mb-5 shrink-0 flex items-center justify-between shadow-sm">
                 <div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-red-500 block mb-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-red-600 block mb-1">
                     Active Emergency Guidance
                   </span>
-                  <h3 className="text-xl font-black uppercase tracking-wide text-white">
+                  <h3 className="text-xl font-black uppercase tracking-wide text-slate-800">
                     {EMERGENCY_CATEGORIES.find(c => c.id === selectedEmergency)?.label || "Emergency"}
                   </h3>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-red-600/25 text-red-400 flex items-center justify-center font-bold text-xs animate-pulse">
+                <div className="h-10 w-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-xs animate-pulse border border-red-200 shadow-sm">
                   SOS
                 </div>
               </div>
 
               {/* Internal Guidance Tabs */}
-              <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 mb-5 shrink-0">
+              <div className="flex bg-slate-100 border border-slate-200 rounded-xl p-1 mb-5 shrink-0 shadow-xs">
                 <button
                   onClick={() => setGuidanceTab("avatar")}
                   className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
                     guidanceTab === "avatar"
-                      ? "bg-red-600 text-white shadow"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-red-600 text-white shadow shadow-red-600/10"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Medical Avatar
@@ -1566,8 +1917,8 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                   onClick={() => setGuidanceTab("voice")}
                   className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
                     guidanceTab === "voice"
-                      ? "bg-red-600 text-white shadow"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-red-600 text-white shadow shadow-red-600/10"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Voice Guide
@@ -1576,8 +1927,8 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                   onClick={() => setGuidanceTab("tutorials")}
                   className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
                     guidanceTab === "tutorials"
-                      ? "bg-red-600 text-white shadow"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-red-600 text-white shadow shadow-red-600/10"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Video Tutorial
@@ -1586,8 +1937,8 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                   onClick={() => setGuidanceTab("video")}
                   className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
                     guidanceTab === "video"
-                      ? "bg-red-600 text-white shadow"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-red-600 text-white shadow shadow-red-600/10"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Emergency Call
@@ -1596,67 +1947,48 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
 
               {/* Tab Content 1: Medical Avatar */}
               {guidanceTab === "avatar" && (
-                <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-black/40 border border-white/5 rounded-2xl p-6 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-radial-gradient opacity-10 pointer-events-none" />
+                <div className="flex-grow flex flex-col justify-between min-h-[300px] bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-transparent pointer-events-none" />
                   
-                  <svg className="w-48 h-64 text-red-500/20 animate-neural-pulse" viewBox="0 0 100 150" fill="currentColor">
-                    <circle cx="50" cy="20" r="10" className={selectedEmergency === "stroke" ? "fill-red-600 animate-pulse" : ""} />
-                    <rect x="48" y="30" width="4" height="6" className={selectedEmergency === "choking" ? "fill-red-600 animate-pulse" : ""} />
-                    <path d="M 38,36 C 42,36 45,40 50,40 C 55,40 58,36 62,36 L 58,75 L 42,75 Z" className={selectedEmergency === "heart_attack" || selectedEmergency === "breathing" ? "fill-red-600 animate-pulse" : ""} />
-                    <path d="M 36,38 L 22,65 A 3,3 0 0 0 25,69 L 38,42 Z" className={selectedEmergency === "bleeding" ? "fill-red-600 animate-pulse" : ""} />
-                    <path d="M 64,38 L 78,65 A 3,3 0 0 0 75,69 L 62,42 Z" />
-                    <path d="M 43,76 L 35,120 A 4,4 0 0 0 42,122 L 49,85 Z" />
-                    <path d="M 57,76 L 65,120 A 4,4 0 0 0 58,122 L 51,85 Z" />
-                    <line x1="10" y1="20" x2="90" y2="20" stroke="rgba(220,38,38,0.5)" strokeWidth="1.5" className="animate-laser-scan" />
-                  </svg>
-
-                  <div className="w-full mt-6 space-y-3.5 text-xs">
-                    <span className="text-[10px] font-extrabold text-red-400 uppercase tracking-widest block">
-                      Critical Avatar Action Checkpoints:
-                    </span>
-                    {selectedEmergency === "heart_attack" ? (
-                      <>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Comfortable Sitting</strong>: Position the patient upright in a chair or against a wall. Reduce physical effort to zero.</p>
+                  {selectedEmergency && EMERGENCY_GUIDANCE[selectedEmergency] ? (
+                    (() => {
+                      const guidance = EMERGENCY_GUIDANCE[selectedEmergency];
+                      const Illustration = guidance.illustration;
+                      return (
+                        <div className="w-full flex flex-col items-center space-y-4">
+                          <div className="h-36 w-full flex items-center justify-center bg-slate-50 rounded-2xl border border-slate-100 p-4 relative">
+                            <Illustration />
+                            <div className="absolute bottom-2 right-2 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[9px] font-bold text-emerald-700 uppercase animate-pulse">
+                              Visual Aid Loaded
+                            </div>
+                          </div>
+                          
+                          <div className="w-full text-left space-y-3">
+                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                              <CheckCircle className="h-4.5 w-4.5 text-red-500 shrink-0" />
+                              {guidance.title} Checklist
+                            </h4>
+                            <div className="space-y-2">
+                              {guidance.steps.map((step, idx) => (
+                                <div key={idx} className="flex items-start gap-2.5 bg-slate-50 border border-slate-200/60 p-3 rounded-xl shadow-xs">
+                                  <span className="h-5 w-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                    {idx + 1}
+                                  </span>
+                                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                                    {step}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Chew Aspirin (300mg)</strong>: If conscious and not allergic, administer aspirin to chew. Dissolves clots rapidly.</p>
-                        </div>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Loosen Dressings</strong>: Unbutton tight collars, neckties, belts to assist natural lung aeration.</p>
-                        </div>
-                      </>
-                    ) : selectedEmergency === "stroke" ? (
-                      <>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>FAST Assessment</strong>: Face (droop?), Arms (drift?), Speech (slurred?), Time (critical!).</p>
-                        </div>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Zero Oral Intake</strong>: Avoid giving food, drink, or oral medicines. Swallowing reflexes may be damaged.</p>
-                        </div>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Positioning</strong>: Lie down on their side (recovery position) if unconscious to keep airways open.</p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Position Comfortably</strong>: Avoid shifting the patient unless there is immediate environmental danger.</p>
-                        </div>
-                        <div className="flex items-start gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                          <CheckCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                          <p><strong>Airway clearance</strong>: Ensure nostrils and chest expand freely without constriction.</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="w-full flex flex-col items-center justify-center py-12">
+                      <p className="text-sm text-slate-500 italic">No emergency selected. Please select a category from the Triage view.</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1943,23 +2275,24 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
             </div>
 
             {/* Right Panel: Smart Auto Dispatch & Routing */}
-            <div className="w-full md:w-1/2 flex flex-col overflow-y-auto p-6">
+            <div className="w-full md:w-1/2 flex flex-col overflow-y-auto p-6 bg-[#FAF9F6] text-slate-800">
               
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-2xl glass-panel-dark relative overflow-hidden h-[260px] flex flex-col justify-between shrink-0 mb-5">
+              {/* GPS Tracking Map Panel */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm relative overflow-hidden h-[260px] flex flex-col justify-between shrink-0 mb-5">
                 
-                <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
                   <div className="flex items-center space-x-1.5">
                     <Navigation className="h-4.5 w-4.5 text-orange-500 animate-spin" />
-                    <span className="text-[9.5px] font-black text-gray-300 uppercase tracking-widest">
+                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
                       Healix GPS Emergency Routing Layer
                     </span>
                   </div>
-                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                     GPS TRACKING ACTIVE
                   </span>
                 </div>
 
-                <div className="flex-grow bg-black/50 border border-white/5 rounded-xl relative overflow-hidden flex items-center justify-center">
+                <div className="flex-grow bg-slate-50 border border-slate-150 rounded-xl relative overflow-hidden flex items-center justify-center">
                   <iframe
                     ref={mapIframeRef}
                     src="/map.html"
@@ -1969,7 +2302,7 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[9px] text-gray-400 font-mono mt-2">
+                <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono mt-2">
                   <span>GPS Patient: {gpsCoordinates.lat.toFixed(4)} N, {gpsCoordinates.lng.toFixed(4)} E</span>
                   <span>Ambulance Status: {dispatchState.toUpperCase()}</span>
                 </div>
@@ -1977,64 +2310,49 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
 
               {/* Triage & Dispatch Stats */}
               <div className="grid grid-cols-2 gap-4 mb-5">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Guaranteed ETA</span>
-                  <div className="text-2xl font-mono font-black text-gradient-orange">
+                <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Guaranteed ETA</span>
+                  <div className="text-2xl font-mono font-black text-slate-800">
                     {Math.floor(dispatchETA / 60)}:{(dispatchETA % 60).toString().padStart(2, "0")} Mins
                   </div>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-wider">Traffic Bypass Layer On</span>
+                  <span className="text-[8px] text-slate-400 uppercase tracking-wider">Traffic Bypass Layer On</span>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Survival Probability</span>
-                  <div className="text-2xl font-mono font-black text-emerald-400">
-                    {hospitalSelected ? `${hospitalSelected.survivalProb}%` : "Calculating..."}
+                <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 text-center flex flex-col justify-center items-center">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Survival Pathway</span>
+                  <div className="text-[12px] font-extrabold text-emerald-600 uppercase flex items-center gap-1.5 animate-pulse bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 mt-1">
+                    <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                    PATHWAY: OPTIMIZED
                   </div>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-wider">Targeting Survival Pathway</span>
+                  <span className="text-[9px] text-slate-400 uppercase tracking-wider mt-1.5 font-bold">Safe Routing Engaged</span>
                 </div>
               </div>
 
-              {/* Hospital Selection Triage Logs */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3.5 mb-5">
-                <h4 className="text-xs font-black uppercase text-white flex items-center gap-1">
-                  <Compass className="h-4 w-4 text-red-500" />
-                  Survival-Probability Routing Diagnostics
-                </h4>
-
-                <div className="space-y-2 text-xs">
-                  {hospitalAvailability.map((hosp, i) => (
-                    <div key={i} className={`flex items-center justify-between p-2 rounded-lg border ${
-                      hosp.isBest ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-300" : "bg-white/5 border-white/5 text-gray-400"
-                    }`}>
-                      <div>
-                        <p className="font-bold">{hosp.name}</p>
-                        <p className="text-[9px] text-gray-500">Beds: {hosp.beds} | Stroke Unit: {hosp.strokeUnit} | Cath Lab: {hosp.cathLab}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-[10px] font-black ${hosp.isBest ? "text-emerald-400" : "text-gray-400"}`}>{hosp.survivalProb || hosp.computedSurvivalProb}% Survival</span>
-                        <p className="text-[8px] text-gray-500">Dist: {hosp.distance}</p>
-                      </div>
-                    </div>
-                  ))}
+              {/* Reassurance Alert Message Panel (Replaces Diagnostics) */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-5 flex items-start space-x-3.5 shadow-sm">
+                <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 animate-bounce">
+                  <Shield className="h-5 w-5" />
                 </div>
-
-                <div className="p-3 bg-red-950/25 border border-red-500/15 rounded-xl text-[10px] leading-relaxed text-red-200">
-                  <strong>Moat Factor</strong>: Unlike competitors routing to the closest physical hospital, Healix analyzes real-time critical bed occupancy (ICU, stroke center, cath labs) to target the highest survival probability node.
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-slate-800">Help will reach you soon</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    Your emergency request is verified. The dispatch fleet has bypassed local red lights. **Please stay calm and follow the guidelines on your screen.**
+                  </p>
                 </div>
               </div>
 
               {/* Pre-Notification and Family Alerts */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
-                <h4 className="text-xs font-black uppercase text-white flex items-center gap-1">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+                <h4 className="text-xs font-black uppercase text-slate-800 flex items-center gap-1">
                   <FileText className="h-4 w-4 text-orange-500" />
                   Outbound Communications & Telemetry
                 </h4>
 
                 <div className="text-xs space-y-2 font-mono">
-                  <div className="p-2.5 bg-black/40 rounded border border-white/5">
-                    <p className="text-[9px] text-gray-500 uppercase font-black">Hospital Pre-Notification</p>
-                    <p className="text-[10.5px] text-emerald-400">{preNotificationStatus}</p>
-                    <p className="text-[8px] text-gray-600 mt-1">
+                  <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
+                    <p className="text-[9px] text-slate-500 uppercase font-black">Hospital Pre-Notification</p>
+                    <p className="text-[10.5px] text-emerald-600 font-bold">{preNotificationStatus}</p>
+                    <p className="text-[8px] text-slate-400 mt-1">
                       Checklist: {selectedEmergency === "heart_attack" ? "Cath lab checklist prep advised." : "FAST stroke team mobilization alert."}
                     </p>
                   </div>

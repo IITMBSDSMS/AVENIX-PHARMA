@@ -6,14 +6,15 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const email = url.searchParams.get("email");
 
-    // Fetch the most recent active event
-    const event = await db.emergencyEvent.findFirst({
-      where: email ? { userEmail: email } : undefined,
-      orderBy: { id: "desc" } // get newest
-    });
-
-    if (!event) {
-      return NextResponse.json({ success: true, event: null });
+    let event = null;
+    try {
+      // Fetch the most recent active event
+      event = await db.emergencyEvent.findFirst({
+        where: email ? { userEmail: email } : undefined,
+        orderBy: { id: "desc" } // get newest
+      });
+    } catch (dbError) {
+      console.warn("db.emergencyEvent.findFirst failed (read-only SQLite fallback):", dbError);
     }
 
     return NextResponse.json({
