@@ -1616,21 +1616,25 @@ export default function HealixSOSOverlay({ isOpen, onClose }: HealixSOSOverlayPr
                   <button
                     key={category.id}
                     onClick={() => handleCategorySelect(category.id)}
-                    className={`relative p-5 pt-7 pb-5 rounded-2xl text-left border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between h-40 group ${
+                    className={`relative p-5 pt-8 pb-5 rounded-2xl text-left border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between h-40 group ${
                       selectedEmergency === category.id
                         ? "bg-slate-200 border-red-500 shadow-md scale-105"
                         : "bg-slate-100/90 border-slate-200/80 hover:border-red-500/40 hover:bg-slate-200/60 hover:-translate-y-1"
                     }`}
                   >
-                    {/* Gradient top concern stripe */}
-                    <div className={`absolute top-0 left-0 right-0 h-[6px] bg-gradient-to-r ${category.color}`} />
+                    {/* Calming low-opacity colored backdrop wash matching concern color */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-[0.06] group-hover:opacity-[0.10] transition-opacity duration-300 -z-10`} />
+
+                    {/* Gradient top concern stripe (increased from 6px to 10px) */}
+                    <div className={`absolute top-0 left-0 right-0 h-[10px] bg-gradient-to-r ${category.color}`} />
                     
                     {/* Decorative subtle background gradient */}
                     <div className="absolute top-0 right-0 w-24 h-24 bg-slate-200/10 rounded-full filter blur-md -z-10 group-hover:scale-125 transition-transform" />
 
                     <div className="flex items-center justify-between w-full">
-                      <div className="h-12 w-12 rounded-xl bg-slate-200/80 flex items-center justify-center text-slate-700 group-hover:scale-110 transition-transform">
-                        <IconComp className="h-6 w-6 text-slate-700" />
+                      {/* Fully color-coded icon container with white icon */}
+                      <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-sm`}>
+                        <IconComp className="h-6 w-6 text-white" />
                       </div>
                       <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border ${
                         category.severity === "Critical"
